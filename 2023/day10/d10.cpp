@@ -4,7 +4,7 @@
 #include <queue>
 
 using namespace std;
-#define filename "test.txt"
+#define filename "input.txt"
 
 vector<int> findStart(vector<string> input) {
     for (int i = 0; i < input.size(); i++) {
@@ -379,6 +379,114 @@ int part2alt(vector<string> input) {
     return -1;
 }
 
+vector<vector<int>> findCoords(vector<string> &input) {
+    vector<int> startLoc = findStart(input);
+
+    bool visited[input.size()][input[0].size()]{};
+    visited[startLoc[0]][startLoc[1]] = true;
+
+    vector<vector<int>> starters = {{0,1}, {0,-1}, {1,0},{-1,0}};
+    for (vector<int> nextTrans : starters) {
+        vector<int> curPos = startLoc;
+        int cycleLength = 0;
+        vector<vector<int>> coords = {startLoc};
+        while (true) {
+            vector<int> newPos = {curPos[0] + nextTrans[0], curPos[1] + nextTrans[1]};
+            //printf("(%d, %d) -> (%d, %d)\n", curPos[0], curPos[1], newPos[0], newPos[1]);
+            if (!isValid(newPos, input)) {
+                break;
+            }
+            if (newPos == startLoc) {
+                //return (cycleLength + 1) / 2;
+                return coords;
+            }
+            if (visited[newPos[0]][newPos[1]]) {
+                break;
+            }
+            //continue
+            char curSymb = input[newPos[0]][newPos[1]];
+            if (curSymb != '|' && curSymb != '-') {
+                coords.push_back({curPos[0], curPos[1]});
+            }
+            nextTrans = determineNextTrans(nextTrans, curSymb);
+            if (nextTrans[0] == 0 && nextTrans[1] == 0) {
+                break;
+            }
+            cycleLength++;
+            curPos = newPos;
+            visited[curPos[0]][curPos[1]] = true;
+
+        }
+    }
+
+    return {};
+}
+
+int shoelaceArea(vector<vector<int>> &coords) {
+
+    int answer = 0;
+    for (int i = 0; i < coords.size(); i++) {
+        int nei = (i+1) % coords.size();
+        answer += (coords[i][1] * coords[nei][0]) - (coords[nei][1] * coords[i][0]);
+    }
+
+    return answer / 2;
+}
+
+int part2Her(vector<string> &input) {
+    vector<vector<int>> coords = findCoords(input);
+
+    return abs(shoelaceArea(coords));
+}
+
+int part2Doh(vector<string> &input) {
+    vector<int> startLoc = findStart(input);
+
+    bool visited[input.size()][input[0].size()]{};
+    visited[startLoc[0]][startLoc[1]] = true;
+
+    vector<vector<int>> starters = {{0,1}, {0,-1}, {1,0},{-1,0}};
+    for (vector<int> nextTrans : starters) {
+        vector<int> curPos = startLoc;
+        int cycleLength = 0;
+        vector<vector<int>> coords = {startLoc};
+        while (true) {
+            vector<int> newPos = {curPos[0] + nextTrans[0], curPos[1] + nextTrans[1]};
+            //printf("(%d, %d) -> (%d, %d)\n", curPos[0], curPos[1], newPos[0], newPos[1]);
+            if (!isValid(newPos, input)) {
+                break;
+            }
+            if (newPos == startLoc) {
+                //return (cycleLength + 1) / 2;
+
+                //print coords
+                // for (vector<int> c : coords) {
+                //     printf("(%d, %d)\n", c[0], c[1]);
+                // }
+
+                return abs(shoelaceArea(coords)) - cycleLength / 2;
+            }
+            if (visited[newPos[0]][newPos[1]]) {
+                break;
+            }
+            //continue
+            char curSymb = input[newPos[0]][newPos[1]];
+            if (curSymb != '|' && curSymb != '-') {
+                coords.push_back({newPos[0], newPos[1]});
+            }
+            nextTrans = determineNextTrans(nextTrans, curSymb);
+            if (nextTrans[0] == 0 && nextTrans[1] == 0) {
+                break;
+            }
+            cycleLength++;
+            curPos = newPos;
+            visited[curPos[0]][curPos[1]] = true;
+
+        }
+    }
+
+    return {};
+}
 
 int main() {
     vector<string> input;
@@ -393,6 +501,6 @@ int main() {
     //cout << "Part 1: " << part1(hands, bids) <<endl;
     //cout << "Part 2: " << part2(input) <<endl;
 
-    cout << "Part 2 alt: " << part2alt(input) <<endl;
+    cout << "Part 2 Doh: " << part2Doh(input) <<endl;
     return -1;
 }
